@@ -47,6 +47,7 @@ const saveBtn = document.getElementById("save-btn");
 const newBtn = document.getElementById("new-btn");
 const printBtn = document.getElementById("print-btn");
 const copyStatus = document.getElementById("copy-status");
+const googleLogin = document.getElementById("google-login");
 
 let currentUser = null;
 let currentBilanId = null;
@@ -98,6 +99,7 @@ function init() {
   saveBtn.addEventListener("click", handleSaveBilan);
   newBtn.addEventListener("click", handleNewBilan);
   printBtn.addEventListener("click", handlePrint);
+  if (googleLogin) googleLogin.addEventListener("click", signInWithGoogle);
   if (signOutInline) {
     signOutInline.addEventListener("click", async () => {
       await supabase.auth.signOut();
@@ -168,6 +170,17 @@ async function magicLink() {
   const { error } = await supabase.auth.signInWithOtp({ email });
   if (error) return setAuthStatus(error.message);
   setAuthStatus("Lien magique envoyé.");
+}
+
+async function signInWithGoogle() {
+  if (!supabase) return setAuthStatus("Supabase non chargé.");
+  const { error } = await supabase.auth.signInWithOAuth({
+    provider: "google",
+    options: {
+      redirectTo: window.location.origin,
+    },
+  });
+  if (error) return setAuthStatus(error.message);
 }
 
 function setAuthStatus(message) {
