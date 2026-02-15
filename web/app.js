@@ -9,6 +9,7 @@ const authView = document.getElementById("auth-view");
 const appView = document.getElementById("app-view");
 const authStatus = document.getElementById("auth-status");
 const authActions = document.getElementById("auth-actions");
+const signOutInline = document.getElementById("sign-out-inline");
 const savedBilans = document.getElementById("saved-bilans");
 
 const fields = {
@@ -97,6 +98,11 @@ function init() {
   saveBtn.addEventListener("click", handleSaveBilan);
   newBtn.addEventListener("click", handleNewBilan);
   printBtn.addEventListener("click", handlePrint);
+  if (signOutInline) {
+    signOutInline.addEventListener("click", async () => {
+      await supabase.auth.signOut();
+    });
+  }
 
   document.getElementById("sign-in").addEventListener("click", signIn);
   document.getElementById("sign-up").addEventListener("click", signUp);
@@ -132,13 +138,7 @@ function updateAuthUI() {
 
   authView.classList.add("hidden");
   appView.classList.remove("hidden");
-  authActions.innerHTML = `
-    <div class="note">${escapeHtml(currentUser.email || "")}</div>
-    <button id="sign-out" class="ghost" type="button">Se déconnecter</button>
-  `;
-  document.getElementById("sign-out").addEventListener("click", async () => {
-    await supabase.auth.signOut();
-  });
+  authActions.innerHTML = `<div class="note">${escapeHtml(currentUser.email || "")}</div>`;
 }
 
 async function signIn() {
