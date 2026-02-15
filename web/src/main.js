@@ -1,15 +1,16 @@
+import "./style.css";
+import { createClient } from "@supabase/supabase-js";
+
 const SUPABASE_URL = "https://nvmcglnkzvipkhsgxbfx.supabase.co";
 const SUPABASE_ANON_KEY =
   "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im52bWNnbG5renZpcGtoc2d4YmZ4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzExODI4MjQsImV4cCI6MjA4Njc1ODgyNH0.uTlLc6WH7IcFabmuCOfV_vTUU6mo7HfA136xfw7OXYI";
 
-const supabaseLib = window.supabase;
-const supabase = supabaseLib?.createClient ? supabaseLib.createClient(SUPABASE_URL, SUPABASE_ANON_KEY) : null;
+const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 const authView = document.getElementById("auth-view");
 const appView = document.getElementById("app-view");
 const authStatus = document.getElementById("auth-status");
 const authActions = document.getElementById("auth-actions");
-const signOutInline = document.getElementById("sign-out-inline");
 const savedBilans = document.getElementById("saved-bilans");
 
 const fields = {
@@ -48,29 +49,14 @@ const newBtn = document.getElementById("new-btn");
 const printBtn = document.getElementById("print-btn");
 const copyStatus = document.getElementById("copy-status");
 const googleLogin = document.getElementById("google-login");
+const signOutInline = document.getElementById("sign-out-inline");
 
 let currentUser = null;
 let currentBilanId = null;
 
-window.addEventListener("error", (event) => {
-  if (authStatus) authStatus.textContent = `Erreur JS: ${event.message}`;
-});
-
-window.addEventListener("unhandledrejection", (event) => {
-  if (authStatus) authStatus.textContent = `Erreur: ${event.reason?.message || event.reason}`;
-});
-
 init();
 
 function init() {
-  if (!supabase) {
-    if (authStatus) {
-      authStatus.textContent =
-        "Supabase non chargé. Les boutons ne fonctionneront pas tant que le script n'est pas chargé.";
-    }
-  } else if (authStatus) {
-    authStatus.textContent = "Connexion prête.";
-  }
   if (fields.bilanDate && !fields.bilanDate.value) {
     fields.bilanDate.value = new Date().toISOString().slice(0, 10);
   }
@@ -127,6 +113,7 @@ function init() {
   });
 
   updatePreview();
+  if (authStatus) authStatus.textContent = "Connexion prête.";
 }
 
 function updateAuthUI() {
@@ -144,7 +131,6 @@ function updateAuthUI() {
 }
 
 async function signIn() {
-  if (!supabase) return setAuthStatus("Supabase non chargé.");
   const email = document.getElementById("auth-email").value.trim();
   const password = document.getElementById("auth-password").value.trim();
   if (!email || !password) return setAuthStatus("Email et mot de passe requis.");
@@ -154,7 +140,6 @@ async function signIn() {
 }
 
 async function signUp() {
-  if (!supabase) return setAuthStatus("Supabase non chargé.");
   const email = document.getElementById("auth-email").value.trim();
   const password = document.getElementById("auth-password").value.trim();
   if (!email || !password) return setAuthStatus("Email et mot de passe requis.");
@@ -164,7 +149,6 @@ async function signUp() {
 }
 
 async function magicLink() {
-  if (!supabase) return setAuthStatus("Supabase non chargé.");
   const email = document.getElementById("auth-email").value.trim();
   if (!email) return setAuthStatus("Email requis.");
   const { error } = await supabase.auth.signInWithOtp({ email });
@@ -173,7 +157,6 @@ async function magicLink() {
 }
 
 async function signInWithGoogle() {
-  if (!supabase) return setAuthStatus("Supabase non chargé.");
   const { error } = await supabase.auth.signInWithOAuth({
     provider: "google",
     options: {
