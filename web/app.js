@@ -50,6 +50,14 @@ const copyStatus = document.getElementById("copy-status");
 let currentUser = null;
 let currentBilanId = null;
 
+window.addEventListener("error", (event) => {
+  if (authStatus) authStatus.textContent = `Erreur JS: ${event.message}`;
+});
+
+window.addEventListener("unhandledrejection", (event) => {
+  if (authStatus) authStatus.textContent = `Erreur: ${event.reason?.message || event.reason}`;
+});
+
 init();
 
 function init() {
@@ -60,6 +68,7 @@ function init() {
     }
     return;
   }
+  if (authStatus) authStatus.textContent = "Connexion prête.";
   if (fields.bilanDate && !fields.bilanDate.value) {
     fields.bilanDate.value = new Date().toISOString().slice(0, 10);
   }
