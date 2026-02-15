@@ -1,6 +1,5 @@
-import "./style.css";
-import { createClient } from "@supabase/supabase-js";
 
+const { createClient } = window.supabase || {};
 const SUPABASE_URL = "https://nvmcglnkzvipkhsgxbfx.supabase.co";
 const SUPABASE_ANON_KEY =
   "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im52bWNnbG5renZpcGtoc2d4YmZ4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzExODI4MjQsImV4cCI6MjA4Njc1ODgyNH0.uTlLc6WH7IcFabmuCOfV_vTUU6mo7HfA136xfw7OXYI";

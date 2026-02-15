@@ -581,10 +581,18 @@ function handleSaveBilan() {
     data,
   };
 
-  const list = getSavedBilans();
-  list.unshift(entry);
-  saveBilans(list);
-  renderSavedBilans();
+  try {
+    const list = getSavedBilans();
+    list.unshift(entry);
+    saveBilans(list);
+    renderSavedBilans();
+  } catch (error) {
+    if (copyStatus) {
+      copyStatus.textContent = "Impossible d'enregistrer (stockage bloqué).";
+      setTimeout(() => (copyStatus.textContent = ""), 3000);
+    }
+    return;
+  }
 
   if (window.electronAPI?.savePdf) {
     copyStatus.textContent = "Génération du PDF en cours...";
