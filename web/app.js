@@ -65,11 +65,11 @@ function init() {
   if (!supabase) {
     if (authStatus) {
       authStatus.textContent =
-        "Impossible de charger Supabase. Vérifie la connexion ou le chargement du script.";
+        "Supabase non chargé. Les boutons ne fonctionneront pas tant que le script n'est pas chargé.";
     }
-    return;
+  } else if (authStatus) {
+    authStatus.textContent = "Connexion prête.";
   }
-  if (authStatus) authStatus.textContent = "Connexion prête.";
   if (fields.bilanDate && !fields.bilanDate.value) {
     fields.bilanDate.value = new Date().toISOString().slice(0, 10);
   }
@@ -142,6 +142,7 @@ function updateAuthUI() {
 }
 
 async function signIn() {
+  if (!supabase) return setAuthStatus("Supabase non chargé.");
   const email = document.getElementById("auth-email").value.trim();
   const password = document.getElementById("auth-password").value.trim();
   if (!email || !password) return setAuthStatus("Email et mot de passe requis.");
@@ -151,6 +152,7 @@ async function signIn() {
 }
 
 async function signUp() {
+  if (!supabase) return setAuthStatus("Supabase non chargé.");
   const email = document.getElementById("auth-email").value.trim();
   const password = document.getElementById("auth-password").value.trim();
   if (!email || !password) return setAuthStatus("Email et mot de passe requis.");
@@ -160,6 +162,7 @@ async function signUp() {
 }
 
 async function magicLink() {
+  if (!supabase) return setAuthStatus("Supabase non chargé.");
   const email = document.getElementById("auth-email").value.trim();
   if (!email) return setAuthStatus("Email requis.");
   const { error } = await supabase.auth.signInWithOtp({ email });
