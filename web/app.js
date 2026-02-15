@@ -46,6 +46,7 @@ const preview = document.getElementById("preview");
 const saveBtn = document.getElementById("save-btn");
 const newBtn = document.getElementById("new-btn");
 const printBtn = document.getElementById("print-btn");
+const printNativeBtn = document.getElementById("print-native");
 const copyStatus = document.getElementById("copy-status");
 const googleLogin = document.getElementById("google-login");
 const signOutInline = document.getElementById("sign-out-inline");
@@ -84,6 +85,7 @@ function init() {
   saveBtn.addEventListener("click", handleSaveBilan);
   newBtn.addEventListener("click", handleNewBilan);
   printBtn.addEventListener("click", handlePrint);
+  if (printNativeBtn) printNativeBtn.addEventListener("click", handleNativePrint);
   if (googleLogin) googleLogin.addEventListener("click", signInWithGoogle);
   if (signOutInline) {
     signOutInline.addEventListener("click", async () => {
@@ -296,6 +298,18 @@ async function handlePrint() {
   } catch (error) {
     copyStatus.textContent = "Impossible de générer le PDF (serveur).";
   }
+}
+
+function handleNativePrint() {
+  const html = buildPrintableDocument(collectData());
+  const printWindow = window.open("", "_blank");
+  if (!printWindow) return;
+  printWindow.document.write(html);
+  printWindow.document.close();
+  printWindow.onload = () => {
+    printWindow.focus();
+    printWindow.print();
+  };
 }
 
 function buildPrintableDocument(data) {

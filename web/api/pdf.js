@@ -1,7 +1,7 @@
-import chromium from "@sparticuz/chromium";
-import puppeteer from "puppeteer-core";
+const chromium = require("@sparticuz/chromium");
+const puppeteer = require("puppeteer-core");
 
-export default async function handler(req, res) {
+module.exports = async function handler(req, res) {
   if (req.method !== "POST") {
     res.status(405).json({ error: "Method not allowed" });
     return;
@@ -14,10 +14,11 @@ export default async function handler(req, res) {
       return;
     }
 
+    const executablePath = await chromium.executablePath();
     const browser = await puppeteer.launch({
       args: chromium.args,
       defaultViewport: chromium.defaultViewport,
-      executablePath: await chromium.executablePath(),
+      executablePath,
       headless: chromium.headless,
     });
 
@@ -45,4 +46,12 @@ export default async function handler(req, res) {
   } catch (error) {
     res.status(500).json({ error: "PDF generation failed" });
   }
-}
+};
+
+module.exports.config = {
+  api: {
+    bodyParser: {
+      sizeLimit: "2mb",
+    },
+  },
+};
