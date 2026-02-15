@@ -2,7 +2,8 @@ const SUPABASE_URL = "https://nvmcglnkzvipkhsgxbfx.supabase.co";
 const SUPABASE_ANON_KEY =
   "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im52bWNnbG5renZpcGtoc2d4YmZ4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzExODI4MjQsImV4cCI6MjA4Njc1ODgyNH0.uTlLc6WH7IcFabmuCOfV_vTUU6mo7HfA136xfw7OXYI";
 
-const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+const supabaseLib = window.supabase;
+const supabase = supabaseLib?.createClient ? supabaseLib.createClient(SUPABASE_URL, SUPABASE_ANON_KEY) : null;
 
 const authView = document.getElementById("auth-view");
 const appView = document.getElementById("app-view");
@@ -52,6 +53,13 @@ let currentBilanId = null;
 init();
 
 function init() {
+  if (!supabase) {
+    if (authStatus) {
+      authStatus.textContent =
+        "Impossible de charger Supabase. Vérifie la connexion ou le chargement du script.";
+    }
+    return;
+  }
   if (fields.bilanDate && !fields.bilanDate.value) {
     fields.bilanDate.value = new Date().toISOString().slice(0, 10);
   }
