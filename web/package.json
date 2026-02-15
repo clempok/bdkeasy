@@ -1,0 +1,10 @@
+{
+  "name": "bdkeazy-web",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "@sparticuz/chromium": "^123.0.1",
+    "puppeteer-core": "^23.7.0"
+  }
+}

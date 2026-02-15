@@ -1,0 +1,253 @@
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Clempo | Générateur de devis</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Syne:wght@600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="devis.css" />
+  </head>
+  <body>
+    <header class="topbar">
+      <div class="brand">
+        <div class="brand-logo">C</div>
+        <div>
+          <div class="brand-title">Clempo Devis</div>
+          <div class="brand-subtitle">Offres élégantes, prêtes à signer</div>
+        </div>
+      </div>
+      <div class="top-meta">
+        <span class="meta-chip">Sans CRM · 100% local</span>
+        <span class="meta-chip">Devis prêts à imprimer</span>
+      </div>
+      <div class="top-actions">
+        <button id="print-btn" class="ghost" type="button">Imprimer / PDF</button>
+      </div>
+    </header>
+
+    <main class="container">
+      <section class="layout">
+        <form id="quote-form" class="editor" autocomplete="off">
+          <div class="card">
+            <div class="card-title">Émetteur</div>
+            <div class="grid-2">
+              <div class="field">
+                <label for="seller-name">Société</label>
+                <input id="seller-name" placeholder="Nom de votre société" />
+              </div>
+              <div class="field">
+                <label for="seller-contact">Contact</label>
+                <input id="seller-contact" placeholder="Prénom Nom" />
+              </div>
+              <div class="field">
+                <label for="seller-legal">SIRET / TVA</label>
+                <input id="seller-legal" placeholder="SIRET ou n° TVA" />
+              </div>
+              <div class="field">
+                <label for="seller-website">Site web</label>
+                <input id="seller-website" placeholder="https://" />
+              </div>
+              <div class="field">
+                <label for="seller-email">Email</label>
+                <input id="seller-email" type="email" placeholder="contact@" />
+              </div>
+              <div class="field">
+                <label for="seller-phone">Téléphone</label>
+                <input id="seller-phone" placeholder="+33" />
+              </div>
+            </div>
+            <div class="field">
+              <label for="seller-address">Adresse</label>
+              <textarea id="seller-address" rows="2" placeholder="Rue, code postal, ville"></textarea>
+            </div>
+            <div class="field">
+              <label for="logo-url">Logo (URL)</label>
+              <input id="logo-url" placeholder="https://..." />
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-title">Client</div>
+            <div class="grid-2">
+              <div class="field">
+                <label for="client-company">Entreprise</label>
+                <input id="client-company" placeholder="Nom du client" />
+              </div>
+              <div class="field">
+                <label for="client-contact">Contact</label>
+                <input id="client-contact" placeholder="Prénom Nom" />
+              </div>
+              <div class="field">
+                <label for="client-email">Email</label>
+                <input id="client-email" type="email" placeholder="contact@" />
+              </div>
+              <div class="field">
+                <label for="client-phone">Téléphone</label>
+                <input id="client-phone" placeholder="+33" />
+              </div>
+            </div>
+            <div class="field">
+              <label for="client-address">Adresse</label>
+              <textarea id="client-address" rows="2" placeholder="Rue, code postal, ville"></textarea>
+            </div>
+            <div class="field">
+              <label for="client-vat">N° TVA (optionnel)</label>
+              <input id="client-vat" placeholder="FR..." />
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-title">Devis</div>
+            <div class="grid-2">
+              <div class="field">
+                <label for="quote-number">Numéro</label>
+                <input id="quote-number" placeholder="DV-2026-001" />
+              </div>
+              <div class="field">
+                <label for="quote-status">Statut</label>
+                <select id="quote-status">
+                  <option value="Brouillon">Brouillon</option>
+                  <option value="Envoyé">Envoyé</option>
+                  <option value="Validé">Validé</option>
+                  <option value="Archivé">Archivé</option>
+                </select>
+              </div>
+              <div class="field">
+                <label for="quote-date">Date d'émission</label>
+                <input id="quote-date" type="date" />
+              </div>
+              <div class="field">
+                <label for="quote-validity">Valide jusqu'au</label>
+                <input id="quote-validity" type="date" />
+              </div>
+              <div class="field">
+                <label for="currency">Devise</label>
+                <select id="currency">
+                  <option value="EUR">EUR (€)</option>
+                  <option value="USD">USD ($)</option>
+                  <option value="GBP">GBP (£)</option>
+                  <option value="CHF">CHF</option>
+                </select>
+              </div>
+              <div class="field">
+                <label for="tax-rate">TVA (%)</label>
+                <input id="tax-rate" type="number" step="0.01" placeholder="20" />
+              </div>
+              <div class="field">
+                <label for="discount-value">Remise</label>
+                <input id="discount-value" type="number" step="0.01" placeholder="0" />
+              </div>
+              <div class="field">
+                <label for="discount-type">Type de remise</label>
+                <select id="discount-type">
+                  <option value="percent">%</option>
+                  <option value="amount">Montant</option>
+                </select>
+              </div>
+            </div>
+            <div class="field">
+              <label for="project-title">Objet du devis</label>
+              <input id="project-title" placeholder="Ex: Accompagnement marketing santé" />
+            </div>
+            <div class="field">
+              <label for="intro">Résumé / Contexte</label>
+              <textarea id="intro" rows="2" placeholder="Ex: Mission de 3 mois, lancement produit"></textarea>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-title">Lignes de prestation</div>
+            <div class="items">
+              <div class="items-head">
+                <span>Désignation</span>
+                <span>Description</span>
+                <span>Qté</span>
+                <span>Unité</span>
+                <span>Prix unitaire</span>
+                <span>Total HT</span>
+                <span></span>
+              </div>
+              <div id="items-rows" class="items-rows"></div>
+              <button id="add-item" type="button" class="ghost">Ajouter une ligne</button>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-title">Notes & conditions</div>
+            <div class="field">
+              <label for="notes">Notes client</label>
+              <textarea id="notes" rows="3" placeholder="Ex: planning détaillé, livrables inclus"></textarea>
+            </div>
+            <div class="field">
+              <label for="terms">Conditions de paiement</label>
+              <textarea id="terms" rows="3" placeholder="Ex: 40% à la commande, 60% à la livraison"></textarea>
+            </div>
+            <div class="grid-2">
+              <div class="field">
+                <label for="signature-name">Signataire</label>
+                <input id="signature-name" placeholder="Nom du signataire" />
+              </div>
+              <div class="field">
+                <label for="signature-title">Fonction</label>
+                <input id="signature-title" placeholder="CEO, Directeur..." />
+              </div>
+            </div>
+          </div>
+
+          <div class="card totals-card">
+            <div class="card-title">Totaux</div>
+            <div class="totals-grid">
+              <div class="totals-row">
+                <span>Sous-total HT</span>
+                <strong id="subtotal-value">0 €</strong>
+              </div>
+              <div class="totals-row">
+                <span>Remise</span>
+                <strong id="discount-total">0 €</strong>
+              </div>
+              <div class="totals-row">
+                <span>TVA</span>
+                <strong id="tax-total">0 €</strong>
+              </div>
+              <div class="totals-row total">
+                <span>Total TTC</span>
+                <strong id="total-value">0 €</strong>
+              </div>
+            </div>
+          </div>
+        </form>
+
+        <aside class="sidebar">
+          <div class="card preview-card">
+            <div class="card-title">Aperçu du devis</div>
+            <div id="preview" class="preview"></div>
+            <div class="actions">
+              <button id="copy-btn" type="button" class="primary">Copier le devis</button>
+              <button id="reset-btn" type="button" class="ghost">Réinitialiser</button>
+            </div>
+            <div id="copy-status" class="note ui-note"></div>
+          </div>
+        </aside>
+      </section>
+    </main>
+
+    <template id="item-row-template">
+      <div class="item-row" data-item>
+        <input data-field="name" placeholder="Prestation" />
+        <input data-field="description" placeholder="Détails / périmètre" />
+        <input data-field="qty" type="number" step="0.01" min="0" placeholder="1" />
+        <input data-field="unit" placeholder="forfait" />
+        <input data-field="price" type="number" step="0.01" min="0" placeholder="0.00" />
+        <div class="item-total" data-field="total">0 €</div>
+        <button class="icon-btn" type="button" data-remove aria-label="Supprimer">×</button>
+      </div>
+    </template>
+
+    <script src="devis.js"></script>
+  </body>
+</html>

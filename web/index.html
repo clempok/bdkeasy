@@ -1,0 +1,509 @@
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>BDKEAZY — Bilan kiné EHPAD</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Fraunces:wght@600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="styles.css" />
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  </head>
+  <body>
+    <header class="topbar">
+      <div class="brand">
+        <div class="brand-mark"></div>
+        <div>
+          <div class="brand-title">BDKEAZY</div>
+          <div class="brand-subtitle">Bilan kiné EHPAD — version web</div>
+        </div>
+      </div>
+      <div class="job">
+        <div class="job-title">Job to be done</div>
+        <div class="job-line">Documenter, suivre et partager les bilans en ligne.</div>
+      </div>
+      <div class="top-actions" id="auth-actions"></div>
+    </header>
+
+    <main class="container">
+      <section id="auth-view" class="auth-card">
+        <div class="card">
+          <div class="card-title">Connexion</div>
+          <div class="grid-2">
+            <div class="field">
+              <label for="auth-email">Email</label>
+              <input id="auth-email" type="email" placeholder="email@exemple.fr" />
+            </div>
+            <div class="field">
+              <label for="auth-password">Mot de passe</label>
+              <input id="auth-password" type="password" placeholder="••••••••" />
+            </div>
+          </div>
+          <div class="actions">
+            <button id="sign-in" type="button" class="primary">Se connecter</button>
+            <button id="sign-up" type="button" class="ghost">Créer un compte</button>
+            <button id="magic-link" type="button" class="ghost">Lien magique</button>
+          </div>
+          <div id="auth-status" class="note"></div>
+        </div>
+      </section>
+
+      <section id="app-view" class="layout hidden">
+        <form id="bilan-form" class="stack">
+          <div class="card">
+            <div class="card-title">1. Identité & prescription</div>
+            <div class="grid-3">
+              <div class="field">
+                <label for="patient-last">Nom</label>
+                <input id="patient-last" placeholder="Nom" />
+              </div>
+              <div class="field">
+                <label for="patient-first">Prénom</label>
+                <input id="patient-first" placeholder="Prénom" />
+              </div>
+              <div class="field">
+                <label for="patient-dob">Date de naissance</label>
+                <input id="patient-dob" type="date" />
+              </div>
+              <div class="field">
+                <label for="pathologie">Pathologie principale</label>
+                <input id="pathologie" placeholder="Ex: AVC" />
+              </div>
+              <div class="field">
+                <label for="chambre">Chambre</label>
+                <input id="chambre" placeholder="Ex: 204" />
+              </div>
+              <div class="field">
+                <label for="medecin">Médecin prescripteur</label>
+                <input id="medecin" placeholder="Nom" />
+              </div>
+              <div class="field">
+                <label for="kine">Kinésithérapeute</label>
+                <input id="kine" placeholder="Nom" />
+              </div>
+              <div class="field">
+                <label for="date-ordonnance">Date de l'ordonnance</label>
+                <input id="date-ordonnance" type="date" />
+              </div>
+              <div class="field">
+                <label for="nb-seances">Nombre de séances</label>
+                <input id="nb-seances" type="number" min="0" placeholder="Ex: 65" />
+              </div>
+              <div class="field">
+                <label for="frequence">Fréquence</label>
+                <select id="frequence">
+                  <option value="">Sélectionner</option>
+                  <option>1 / semaine</option>
+                  <option>2 / semaine</option>
+                  <option>3 / semaine</option>
+                  <option>5 / semaine</option>
+                </select>
+              </div>
+              <div class="field">
+                <label for="bilan-date">Date du bilan</label>
+                <input id="bilan-date" type="date" />
+              </div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-title">2. Évaluation</div>
+
+            <div class="subsection">
+              <div class="subsection-title">Bilan trophique</div>
+              <div class="field">
+                <textarea id="trophique" rows="2" placeholder="Observations"></textarea>
+              </div>
+            </div>
+
+            <div class="subsection">
+              <div class="subsection-title">Bilan articulaire</div>
+              <div class="grid-2">
+                <div class="field">
+                  <label>Déficit</label>
+                  <div class="inline-options">
+                    <label class="option"><input type="radio" name="articulaire_deficit" value="Non" />Non</label>
+                    <label class="option"><input type="radio" name="articulaire_deficit" value="Oui" />Oui</label>
+                  </div>
+                </div>
+                <div class="field">
+                  <label for="articulaire_localisation">Localisation</label>
+                  <input id="articulaire_localisation" placeholder="Ex: MSD, genou" />
+                </div>
+              </div>
+            </div>
+
+            <div class="subsection">
+              <div class="subsection-title">Bilan musculaire</div>
+              <div class="grid-2">
+                <div class="field">
+                  <label>Déficit</label>
+                  <div class="inline-options">
+                    <label class="option"><input type="radio" name="musculaire_deficit" value="Non" />Non</label>
+                    <label class="option"><input type="radio" name="musculaire_deficit" value="Oui" />Oui</label>
+                  </div>
+                </div>
+                <div class="field">
+                  <label for="musculaire_localisation">Localisation</label>
+                  <input id="musculaire_localisation" placeholder="Ex: tonus MI" />
+                </div>
+              </div>
+            </div>
+
+            <div class="subsection">
+              <div class="subsection-title">Bilan neurologique</div>
+              <div class="grid-2">
+                <div class="field">
+                  <label>Déficit</label>
+                  <div class="inline-options">
+                    <label class="option"><input type="radio" name="neuro_deficit" value="Non" />Non</label>
+                    <label class="option"><input type="radio" name="neuro_deficit" value="Oui" />Oui</label>
+                  </div>
+                </div>
+                <div class="field">
+                  <label for="neuro_localisation">Localisation</label>
+                  <input id="neuro_localisation" placeholder="Ex: AVC" />
+                </div>
+              </div>
+            </div>
+
+            <div class="subsection">
+              <div class="subsection-title">Bilan respiratoire</div>
+              <div class="grid-3">
+                <div class="field">
+                  <label>Déficit</label>
+                  <div class="inline-options">
+                    <label class="option"><input type="radio" name="resp_deficit" value="Non" />Non</label>
+                    <label class="option"><input type="radio" name="resp_deficit" value="Oui" />Oui</label>
+                  </div>
+                </div>
+                <div class="field">
+                  <label for="resp_pathologie">Pathologie</label>
+                  <input id="resp_pathologie" placeholder="Ex: BPCO" />
+                </div>
+                <div class="field">
+                  <label>Kiné respiratoire</label>
+                  <div class="inline-options">
+                    <label class="option"><input type="radio" name="kine_resp" value="Non" />Non</label>
+                    <label class="option"><input type="radio" name="kine_resp" value="Oui" />Oui</label>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="subsection">
+              <div class="subsection-title">Bilan des transferts</div>
+              <div class="grid-2">
+                <div class="field">
+                  <label>Couché → Assis</label>
+                  <div class="inline-options">
+                    <label class="option"><input type="radio" name="transfert_couche_assis" value="Sans aide" />Sans aide</label>
+                    <label class="option"><input type="radio" name="transfert_couche_assis" value="Avec aide" />Avec aide</label>
+                  </div>
+                </div>
+                <div class="field">
+                  <label>Assis → Debout</label>
+                  <div class="inline-options">
+                    <label class="option"><input type="radio" name="transfert_assis_debout" value="Sans aide" />Sans aide</label>
+                    <label class="option"><input type="radio" name="transfert_assis_debout" value="Avec aide" />Avec aide</label>
+                  </div>
+                </div>
+                <div class="field">
+                  <label>Debout → Assis</label>
+                  <div class="inline-options">
+                    <label class="option"><input type="radio" name="transfert_debout_assis" value="Sans aide" />Sans aide</label>
+                    <label class="option"><input type="radio" name="transfert_debout_assis" value="Avec aide" />Avec aide</label>
+                  </div>
+                </div>
+                <div class="field">
+                  <label>Assis → Couché</label>
+                  <div class="inline-options">
+                    <label class="option"><input type="radio" name="transfert_assis_couche" value="Sans aide" />Sans aide</label>
+                    <label class="option"><input type="radio" name="transfert_assis_couche" value="Avec aide" />Avec aide</label>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="subsection">
+              <div class="subsection-title">Bilan de l'équilibre & marche</div>
+              <div class="field">
+                <label>Évaluation</label>
+                <div class="inline-options">
+                  <label class="option"><input type="radio" name="equilibre_nc" value="Non concerné (cognitivement inapte)" />Non concerné (cognitivement inapte)</label>
+                  <label class="option"><input type="radio" name="equilibre_nc" value="Non concerné (hémiplégie au fauteuil)" />Non concerné (hémiplégie au fauteuil)</label>
+                </div>
+              </div>
+              <div class="grid-3">
+                <div class="field">
+                  <label>Appui</label>
+                  <div class="inline-options">
+                    <label class="option"><input type="radio" name="appui" value="Total" />Total</label>
+                    <label class="option"><input type="radio" name="appui" value="Partiel" />Partiel</label>
+                  </div>
+                </div>
+                <div class="field">
+                  <label for="appareillage">Appareillage</label>
+                  <input id="appareillage" placeholder="Ex: fauteuil" />
+                </div>
+                <div class="field">
+                  <label for="perimetre">Périmètre de marche</label>
+                  <input id="perimetre" placeholder="Ex: 10 m" />
+                </div>
+                <div class="field">
+                  <label>Appui bipodal debout</label>
+                  <div class="inline-options">
+                    <label class="option"><input type="radio" name="bipodal" value="Stable" />Stable</label>
+                    <label class="option"><input type="radio" name="bipodal" value="Instable" />Instable</label>
+                  </div>
+                </div>
+                <div class="field">
+                  <label>Appui unipodal debout</label>
+                  <div class="inline-options">
+                    <label class="option"><input type="radio" name="unipodal" value="Stable" />Stable</label>
+                    <label class="option"><input type="radio" name="unipodal" value="Instable" />Instable</label>
+                  </div>
+                </div>
+                <div class="field">
+                  <label>Boiterie</label>
+                  <div class="inline-options">
+                    <label class="option"><input type="radio" name="boiterie" value="Non" />Non</label>
+                    <label class="option"><input type="radio" name="boiterie" value="Oui" />Oui</label>
+                  </div>
+                </div>
+                <div class="field">
+                  <label>Demi-tour</label>
+                  <div class="inline-options">
+                    <label class="option"><input type="radio" name="demi_tour" value="Non" />Non</label>
+                    <label class="option"><input type="radio" name="demi_tour" value="Oui" />Oui</label>
+                  </div>
+                </div>
+                <div class="field">
+                  <label>Escaliers</label>
+                  <div class="inline-options">
+                    <label class="option"><input type="radio" name="escaliers" value="Non" />Non</label>
+                    <label class="option"><input type="radio" name="escaliers" value="Oui" />Oui</label>
+                  </div>
+                </div>
+                <div class="field">
+                  <label for="nb_marches">Nombre de marches</label>
+                  <input id="nb_marches" type="number" min="0" placeholder="Ex: 5" />
+                </div>
+                <div class="field">
+                  <label>Aide à la marche</label>
+                  <div class="inline-options">
+                    <label class="option"><input type="radio" name="aide_marche" value="Sans aide" />Sans aide</label>
+                    <label class="option"><input type="radio" name="aide_marche" value="Avec aide" />Avec aide</label>
+                  </div>
+                  <div class="inline-options">
+                    <label class="option"><input type="checkbox" name="aide_marche_type" value="Canne" />Canne</label>
+                    <label class="option"><input type="checkbox" name="aide_marche_type" value="Rampe" />Rampe</label>
+                    <label class="option"><input type="checkbox" name="aide_marche_type" value="Humaine" />Humaine</label>
+                  </div>
+                </div>
+                <div class="field">
+                  <label>Chute</label>
+                  <div class="inline-options">
+                    <label class="option"><input type="radio" name="chute" value="Non" />Non</label>
+                    <label class="option"><input type="radio" name="chute" value="Oui" />Oui</label>
+                  </div>
+                </div>
+                <div class="field">
+                  <label>Relevé du sol</label>
+                  <div class="inline-options">
+                    <label class="option"><input type="radio" name="releve_sol" value="Non" />Non</label>
+                    <label class="option"><input type="radio" name="releve_sol" value="Oui" />Oui</label>
+                  </div>
+                </div>
+              </div>
+              <div class="field">
+                <label for="equilibre_remarques">Remarques</label>
+                <textarea id="equilibre_remarques" rows="2" placeholder="Observations libres"></textarea>
+              </div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-title">3. Douleur & Test fonctionnel</div>
+            <div class="subsection">
+              <div class="subsection-title">Bilan de la douleur</div>
+              <div class="grid-3">
+                <div class="field">
+                  <label for="douleur_topo">Topographie</label>
+                  <input id="douleur_topo" placeholder="Ex: hanches, bassin" />
+                </div>
+                <div class="field">
+                  <label>Type</label>
+                  <div class="inline-options">
+                    <label class="option"><input type="radio" name="douleur_type" value="Inflammatoire" />Inflammatoire</label>
+                    <label class="option"><input type="radio" name="douleur_type" value="Mécanique" />Mécanique</label>
+                  </div>
+                </div>
+                <div class="field">
+                  <label>Antalgiques</label>
+                  <div class="inline-options">
+                    <label class="option"><input type="radio" name="antalgiques" value="Non" />Non</label>
+                    <label class="option"><input type="radio" name="antalgiques" value="Oui" />Oui</label>
+                  </div>
+                </div>
+                <div class="field">
+                  <label>Efficacité</label>
+                  <div class="inline-options">
+                    <label class="option"><input type="radio" name="efficacite" value="Non" />Non</label>
+                    <label class="option"><input type="radio" name="efficacite" value="Oui" />Oui</label>
+                  </div>
+                </div>
+                <div class="field">
+                  <label for="eva">EVA</label>
+                  <input id="eva" type="number" min="0" max="10" step="1" placeholder="0-10" />
+                  <div class="inline-options">
+                    <label class="option"><input id="eva_nc" type="checkbox" />Pas en capacité de répondre</label>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="subsection">
+              <div class="subsection-title">Test Get Up and Go</div>
+              <div class="field">
+                <label>Évaluation</label>
+                <div class="inline-options">
+                  <label class="option"><input type="radio" name="tug_nc" value="Non concerné (cognitivement inapte)" />Non concerné (cognitivement inapte)</label>
+                  <label class="option"><input type="radio" name="tug_nc" value="Non concerné (hémiplégie au fauteuil)" />Non concerné (hémiplégie au fauteuil)</label>
+                </div>
+              </div>
+              <div class="grid-2">
+                <div class="field">
+                  <label for="tug_time">Temps</label>
+                  <input id="tug_time" placeholder="Ex: 20 s" />
+                </div>
+                <div class="field">
+                  <label>Se lever sans aide des bras</label>
+                  <div class="inline-options">
+                    <label class="option"><input type="radio" name="tug_lever_sans" value="Non" />Non</label>
+                    <label class="option"><input type="radio" name="tug_lever_sans" value="Oui" />Oui</label>
+                  </div>
+                </div>
+                <div class="field">
+                  <label>Se lever avec accoudoirs</label>
+                  <div class="inline-options">
+                    <label class="option"><input type="radio" name="tug_lever_avec" value="Non" />Non</label>
+                    <label class="option"><input type="radio" name="tug_lever_avec" value="Oui" />Oui</label>
+                  </div>
+                </div>
+                <div class="field">
+                  <label>Se tenir debout sans aide</label>
+                  <div class="inline-options">
+                    <label class="option"><input type="radio" name="tug_debout" value="Non" />Non</label>
+                    <label class="option"><input type="radio" name="tug_debout" value="Oui" />Oui</label>
+                  </div>
+                </div>
+                <div class="field">
+                  <label>Monter / descendre 1 marche</label>
+                  <div class="inline-options">
+                    <label class="option"><input type="radio" name="tug_marche" value="Non" />Non</label>
+                    <label class="option"><input type="radio" name="tug_marche" value="Oui" />Oui</label>
+                  </div>
+                </div>
+                <div class="field">
+                  <label>Fait demi-tour sans toucher le mur</label>
+                  <div class="inline-options">
+                    <label class="option"><input type="radio" name="tug_demi_tour" value="Non" />Non</label>
+                    <label class="option"><input type="radio" name="tug_demi_tour" value="Oui" />Oui</label>
+                  </div>
+                </div>
+                <div class="field">
+                  <label>Se rassoit sans aide</label>
+                  <div class="inline-options">
+                    <label class="option"><input type="radio" name="tug_rassoit" value="Non" />Non</label>
+                    <label class="option"><input type="radio" name="tug_rassoit" value="Oui" />Oui</label>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-title">4. Objectifs kinésithérapiques</div>
+            <div class="check-grid">
+              <label class="check"><input type="checkbox" name="objectifs" value="Améliorer son autonomie" /><span>Améliorer son autonomie</span></label>
+              <label class="check"><input type="checkbox" name="objectifs" value="Lui redonner confiance" /><span>Lui redonner confiance</span></label>
+              <label class="check"><input type="checkbox" name="objectifs" value="Diminuer sa douleur" /><span>Diminuer sa douleur</span></label>
+              <label class="check"><input type="checkbox" name="objectifs" value="Augmenter ses amplitudes articulaires" /><span>Augmenter ses amplitudes articulaires</span></label>
+              <label class="check"><input type="checkbox" name="objectifs" value="Augmenter son tonus musculaire" /><span>Augmenter son tonus musculaire</span></label>
+              <label class="check"><input type="checkbox" name="objectifs" value="Améliorer son équilibre" /><span>Améliorer son équilibre</span></label>
+              <label class="check"><input type="checkbox" name="objectifs" value="Augmenter son périmètre de marche" /><span>Augmenter son périmètre de marche</span></label>
+              <label class="check"><input type="checkbox" name="objectifs" value="Faciliter ses transferts" /><span>Faciliter ses transferts</span></label>
+              <label class="check"><input type="checkbox" name="objectifs" value="Améliorer son confort" /><span>Améliorer son confort</span></label>
+            </div>
+            <div class="field">
+              <label for="objectifs_autres">Autres objectifs</label>
+              <textarea id="objectifs_autres" rows="2" placeholder="Autres objectifs"></textarea>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-title">5. Traitement kinésithérapique</div>
+            <div class="check-grid">
+              <label class="check"><input type="checkbox" name="traitements" value="Massage circulatoire" /><span>Massage circulatoire</span></label>
+              <label class="check"><input type="checkbox" name="traitements" value="Massages antalgiques et décontracturants" /><span>Massages antalgiques et décontracturants</span></label>
+              <label class="check"><input type="checkbox" name="traitements" value="Mobilisation passive ou active" /><span>Mobilisation passive ou active</span></label>
+              <label class="check"><input type="checkbox" name="traitements" value="Assouplissement du rachis" /><span>Assouplissement du rachis</span></label>
+              <label class="check"><input type="checkbox" name="traitements" value="Renforcement musculaire" /><span>Renforcement musculaire</span></label>
+              <label class="check"><input type="checkbox" name="traitements" value="Récupération neurologique" /><span>Récupération neurologique</span></label>
+              <label class="check"><input type="checkbox" name="traitements" value="Exercices respiratoires" /><span>Exercices respiratoires</span></label>
+              <label class="check"><input type="checkbox" name="traitements" value="Travail des transferts" /><span>Travail des transferts</span></label>
+              <label class="check"><input type="checkbox" name="traitements" value="Exercices d'équilibre" /><span>Exercices d'équilibre</span></label>
+            </div>
+            <div class="field">
+              <label for="traitements_autres">Autres traitements</label>
+              <textarea id="traitements_autres" rows="2" placeholder="Autres traitements"></textarea>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-title">6. Propositions</div>
+            <div class="grid-2">
+              <div class="field">
+                <label>Proposition</label>
+                <div class="inline-options">
+                  <label class="option"><input type="radio" name="proposition" value="Arrêt du traitement" />Arrêt du traitement</label>
+                  <label class="option"><input type="radio" name="proposition" value="Renouvellement" />Renouvellement</label>
+                </div>
+              </div>
+              <div class="field">
+                <label for="proposition_date">Date</label>
+                <input id="proposition_date" type="date" />
+              </div>
+            </div>
+          </div>
+        </form>
+
+        <aside class="sidebar">
+          <div class="card summary">
+            <div class="card-title">Aperçu du bilan</div>
+            <div id="preview" class="preview"></div>
+            <div class="actions">
+              <button id="new-btn" type="button" class="ghost">Nouveau</button>
+              <button id="save-btn" type="button" class="primary">Enregistrer</button>
+              <button id="print-btn" type="button" class="ghost">Télécharger PDF</button>
+            </div>
+            <div id="copy-status" class="note"></div>
+          </div>
+
+          <div class="card">
+            <div class="card-title">Bilans enregistrés</div>
+            <div class="note">Clique pour ouvrir, dupliquer ou supprimer.</div>
+            <div id="saved-bilans" class="saved-list"></div>
+          </div>
+        </aside>
+      </section>
+    </main>
+
+    <script src="app.js"></script>
+  </body>
+</html>
