@@ -358,6 +358,7 @@ async function downloadMonth(entries, monthLabel) {
   copyStatus.textContent = "Préparation des PDFs...";
   const zip = new window.JSZip();
   let added = 0;
+  const errors = [];
   for (const entry of entries) {
     const html = buildPrintableDocument(entry.data);
     const title = entry.title || "bilan";
@@ -367,6 +368,8 @@ async function downloadMonth(entries, monthLabel) {
       body: JSON.stringify({ html, title }),
     });
     if (!response.ok) {
+      const errorText = await response.text();
+      errors.push(`PDF ${title}: ${errorText || response.status}`);
       continue;
     }
     const blob = await response.blob();
@@ -377,6 +380,9 @@ async function downloadMonth(entries, monthLabel) {
   }
   if (added === 0) {
     copyStatus.textContent = "Aucun PDF généré. Vérifie l'export serveur.";
+    if (errors.length) {
+      console.error("PDF errors:", errors);
+    }
     return;
   }
   const zipBlob = await zip.generateAsync({ type: "blob" });

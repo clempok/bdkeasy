@@ -44,7 +44,8 @@ module.exports = async function handler(req, res) {
     );
     res.status(200).send(pdf);
   } catch (error) {
-    res.status(500).json({ error: "PDF generation failed" });
+    console.error("PDF generation failed:", error);
+    res.status(500).json({ error: "PDF generation failed", details: String(error) });
   }
 };
 
