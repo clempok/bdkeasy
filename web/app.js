@@ -52,6 +52,9 @@ const printNativeBtn = document.getElementById("print-native");
 const copyStatus = document.getElementById("copy-status");
 const googleLogin = document.getElementById("google-login");
 const signOutInline = document.getElementById("sign-out-inline");
+const renewalModal = document.getElementById("renewal-modal");
+const renewalYes = document.getElementById("renewal-yes");
+const renewalNo = document.getElementById("renewal-no");
 
 let currentUser = null;
 let currentBilanId = null;
@@ -354,6 +357,7 @@ async function downloadMonth(entries, monthLabel) {
   }
   copyStatus.textContent = "Préparation des PDFs...";
   const zip = new window.JSZip();
+  let added = 0;
   for (const entry of entries) {
     const html = buildPrintableDocument(entry.data);
     const title = entry.title || "bilan";
@@ -362,10 +366,18 @@ async function downloadMonth(entries, monthLabel) {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ html, title }),
     });
-    if (!response.ok) continue;
+    if (!response.ok) {
+      continue;
+    }
     const blob = await response.blob();
+    if (!blob || blob.size === 0) continue;
     const arrayBuffer = await blob.arrayBuffer();
     zip.file(`${sanitizeFilename(title)}.pdf`, arrayBuffer);
+    added += 1;
+  }
+  if (added === 0) {
+    copyStatus.textContent = "Aucun PDF généré. Vérifie l'export serveur.";
+    return;
   }
   const zipBlob = await zip.generateAsync({ type: "blob" });
   const url = URL.createObjectURL(zipBlob);
@@ -382,7 +394,7 @@ async function downloadMonth(entries, monthLabel) {
 async function duplicateMonth(entries) {
   const newDate = window.prompt("Date du nouveau bilan (YYYY-MM-DD) ?");
   if (!newDate) return;
-  const updateRenewal = window.confirm("Mettre à jour la date de renouvellement ?");
+  const updateRenewal = await askRenewalChoice();
   copyStatus.textContent = "Duplication en cours...";
 
   for (const entry of entries) {
@@ -401,6 +413,28 @@ async function duplicateMonth(entries) {
   copyStatus.textContent = "Duplication terminée.";
   setTimeout(() => (copyStatus.textContent = ""), 2000);
   loadBilans();
+}
+
+function askRenewalChoice() {
+  return new Promise((resolve) => {
+    if (!renewalModal) return resolve(false);
+    renewalModal.classList.remove("hidden");
+    const cleanup = () => {
+      renewalModal.classList.add("hidden");
+      renewalYes.removeEventListener("click", onYes);
+      renewalNo.removeEventListener("click", onNo);
+    };
+    const onYes = () => {
+      cleanup();
+      resolve(true);
+    };
+    const onNo = () => {
+      cleanup();
+      resolve(false);
+    };
+    renewalYes.addEventListener("click", onYes);
+    renewalNo.addEventListener("click", onNo);
+  });
 }
 
 function sanitizeFilename(value) {

@@ -440,6 +440,35 @@ button.ghost {
   color: var(--muted);
 }
 
+.modal {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 18, 20, 0.45);
+  display: grid;
+  place-items: center;
+  z-index: 50;
+}
+
+.modal-card {
+  background: #fff;
+  border-radius: 16px;
+  padding: 18px;
+  width: min(420px, 92vw);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+}
+
+.modal-title {
+  font-weight: 700;
+  margin-bottom: 12px;
+  color: var(--accent-3);
+}
+
+.modal-actions {
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+}
+
 @media (max-width: 980px) {
   .layout {
     grid-template-columns: 1fr;
