@@ -358,31 +358,16 @@ async function downloadMonth(entries, monthLabel) {
   copyStatus.textContent = "Préparation des PDFs...";
   const zip = new window.JSZip();
   let added = 0;
-  const errors = [];
   for (const entry of entries) {
-    const html = buildPrintableDocument(entry.data);
     const title = entry.title || "bilan";
-    const response = await fetch("/api/pdf", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ html, title }),
-    });
-    if (!response.ok) {
-      const errorText = await response.text();
-      errors.push(`PDF ${title}: ${errorText || response.status}`);
-      continue;
-    }
-    const blob = await response.blob();
+    const blob = await generatePdfBlob(entry.data);
     if (!blob || blob.size === 0) continue;
     const arrayBuffer = await blob.arrayBuffer();
     zip.file(`${sanitizeFilename(title)}.pdf`, arrayBuffer);
     added += 1;
   }
   if (added === 0) {
-    copyStatus.textContent = "Aucun PDF généré. Vérifie l'export serveur.";
-    if (errors.length) {
-      console.error("PDF errors:", errors);
-    }
+    copyStatus.textContent = "Aucun PDF généré. Vérifie l'export client.";
     return;
   }
   const zipBlob = await zip.generateAsync({ type: "blob" });
@@ -454,16 +439,8 @@ function sanitizeFilename(value) {
 async function handlePrint() {
   const data = collectData();
   const title = buildBilanTitle(data);
-  const html = buildPrintableDocument(data);
-
   try {
-    const response = await fetch("/api/pdf", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ html, title }),
-    });
-    if (!response.ok) throw new Error("PDF error");
-    const blob = await response.blob();
+    const blob = await generatePdfBlob(data);
     const url = URL.createObjectURL(blob);
     const link = document.createElement("a");
     link.href = url;
@@ -473,8 +450,33 @@ async function handlePrint() {
     link.remove();
     URL.revokeObjectURL(url);
   } catch (error) {
-    copyStatus.textContent = "Impossible de générer le PDF (serveur).";
+    copyStatus.textContent = "Impossible de générer le PDF (client).";
   }
+}
+
+async function generatePdfBlob(data) {
+  if (!window.jspdf || !window.html2canvas) {
+    throw new Error("PDF libs missing");
+  }
+  const { jsPDF } = window.jspdf;
+  const container = document.createElement("div");
+  container.style.position = "fixed";
+  container.style.left = "-9999px";
+  container.style.top = "0";
+  container.style.width = "800px";
+  container.innerHTML = buildPreviewHtml(data);
+  document.body.appendChild(container);
+
+  const doc = new jsPDF("p", "pt", "a4");
+  await doc.html(container, {
+    autoPaging: "text",
+    html2canvas: { scale: 2 },
+    margin: [36, 36, 36, 36],
+    callback: () => {
+      document.body.removeChild(container);
+    },
+  });
+  return doc.output("blob");
 }
 
 function handleNativePrint() {
