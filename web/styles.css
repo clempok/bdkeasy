@@ -381,6 +381,39 @@ button.ghost {
   gap: 8px;
 }
 
+.month-folder {
+  border: 1px solid #eadfce;
+  border-radius: 16px;
+  padding: 12px;
+  background: #ffffff;
+  display: grid;
+  gap: 10px;
+}
+
+.month-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.month-title {
+  font-weight: 700;
+  font-size: 14px;
+  color: var(--accent-3);
+}
+
+.month-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.month-actions button {
+  font-size: 12px;
+  padding: 6px 10px;
+}
+
 .saved-title {
   font-weight: 700;
   font-size: 13px;

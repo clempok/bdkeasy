@@ -254,35 +254,161 @@ async function loadBilans() {
     return;
   }
 
+  const grouped = groupByMonth(data);
   savedBilans.innerHTML = "";
-  data.forEach((entry) => {
-    const item = document.createElement("div");
-    item.className = "saved-item";
-    item.innerHTML = `
-      <div class="saved-title">${escapeHtml(entry.title)}</div>
-      <div class="saved-meta">Enregistré le ${escapeHtml(formatDate(entry.created_at.slice(0, 10)))}</div>
-      <div class="saved-actions">
-        <button type="button" class="ghost" data-action="load">Ouvrir</button>
-        <button type="button" class="ghost" data-action="duplicate">Dupliquer</button>
-        <button type="button" class="ghost" data-action="delete">Supprimer</button>
-      </div>
-    `;
-    item.querySelector("[data-action='load']").addEventListener("click", () => {
-      currentBilanId = entry.id;
-      loadBilan(entry.data);
+  Object.keys(grouped)
+    .sort()
+    .reverse()
+    .forEach((monthKey) => {
+      const folder = document.createElement("div");
+      folder.className = "month-folder";
+      const monthLabel = formatMonthLabel(monthKey);
+      folder.innerHTML = `
+        <div class="month-header">
+          <div class="month-title">${escapeHtml(monthLabel)}</div>
+          <div class="month-actions">
+            <button type="button" class="ghost" data-action="download">Télécharger tout</button>
+            <button type="button" class="ghost" data-action="duplicate">Dupliquer tout</button>
+          </div>
+        </div>
+        <div class="saved-list" data-list></div>
+      `;
+
+      const listContainer = folder.querySelector("[data-list]");
+      grouped[monthKey].forEach((entry) => {
+        const item = document.createElement("div");
+        item.className = "saved-item";
+        item.innerHTML = `
+          <div class="saved-title">${escapeHtml(entry.title)}</div>
+          <div class="saved-meta">Enregistré le ${escapeHtml(formatDate(entry.created_at.slice(0, 10)))}</div>
+          <div class="saved-actions">
+            <button type="button" class="ghost" data-action="load">Ouvrir</button>
+            <button type="button" class="ghost" data-action="duplicate">Dupliquer</button>
+            <button type="button" class="ghost" data-action="delete">Supprimer</button>
+          </div>
+        `;
+        item.querySelector("[data-action='load']").addEventListener("click", () => {
+          currentBilanId = entry.id;
+          loadBilan(entry.data);
+        });
+        item.querySelector("[data-action='duplicate']").addEventListener("click", () => {
+          currentBilanId = null;
+          const clone = structuredClone(entry.data);
+          clone.bilanDate = new Date().toISOString().slice(0, 10);
+          loadBilan(clone);
+        });
+        item.querySelector("[data-action='delete']").addEventListener("click", async () => {
+          await supabaseClient.from("bilans").delete().eq("id", entry.id);
+          loadBilans();
+        });
+        listContainer.appendChild(item);
+      });
+
+      folder.querySelector("[data-action='download']").addEventListener("click", async () => {
+        await downloadMonth(grouped[monthKey], monthLabel);
+      });
+      folder.querySelector("[data-action='duplicate']").addEventListener("click", async () => {
+        await duplicateMonth(grouped[monthKey]);
+      });
+
+      savedBilans.appendChild(folder);
     });
-    item.querySelector("[data-action='duplicate']").addEventListener("click", () => {
-      currentBilanId = null;
-      const clone = structuredClone(entry.data);
-      clone.bilanDate = new Date().toISOString().slice(0, 10);
-      loadBilan(clone);
-    });
-    item.querySelector("[data-action='delete']").addEventListener("click", async () => {
-      await supabaseClient.from("bilans").delete().eq("id", entry.id);
-      loadBilans();
-    });
-    savedBilans.appendChild(item);
+}
+
+function groupByMonth(items) {
+  const grouped = {};
+  items.forEach((entry) => {
+    const date = entry.data?.bilanDate || entry.created_at?.slice(0, 10) || "";
+    const key = date ? date.slice(0, 7) : "inconnu";
+    if (!grouped[key]) grouped[key] = [];
+    grouped[key].push(entry);
   });
+  return grouped;
+}
+
+function formatMonthLabel(key) {
+  if (key === "inconnu") return "Sans date";
+  const [year, month] = key.split("-");
+  const monthNames = [
+    "Janvier",
+    "Février",
+    "Mars",
+    "Avril",
+    "Mai",
+    "Juin",
+    "Juillet",
+    "Août",
+    "Septembre",
+    "Octobre",
+    "Novembre",
+    "Décembre",
+  ];
+  const index = Number(month) - 1;
+  return `${monthNames[index] || key} ${year}`;
+}
+
+async function downloadMonth(entries, monthLabel) {
+  if (!window.JSZip) {
+    copyStatus.textContent = "JSZip indisponible pour télécharger en masse.";
+    return;
+  }
+  copyStatus.textContent = "Préparation des PDFs...";
+  const zip = new window.JSZip();
+  for (const entry of entries) {
+    const html = buildPrintableDocument(entry.data);
+    const title = entry.title || "bilan";
+    const response = await fetch("/api/pdf", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ html, title }),
+    });
+    if (!response.ok) continue;
+    const blob = await response.blob();
+    const arrayBuffer = await blob.arrayBuffer();
+    zip.file(`${sanitizeFilename(title)}.pdf`, arrayBuffer);
+  }
+  const zipBlob = await zip.generateAsync({ type: "blob" });
+  const url = URL.createObjectURL(zipBlob);
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = `${sanitizeFilename(monthLabel)}.zip`;
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+  URL.revokeObjectURL(url);
+  copyStatus.textContent = "";
+}
+
+async function duplicateMonth(entries) {
+  const newDate = window.prompt("Date du nouveau bilan (YYYY-MM-DD) ?");
+  if (!newDate) return;
+  const updateRenewal = window.confirm("Mettre à jour la date de renouvellement ?");
+  copyStatus.textContent = "Duplication en cours...";
+
+  for (const entry of entries) {
+    const data = structuredClone(entry.data || {});
+    data.bilanDate = newDate;
+    if (updateRenewal) {
+      data.propositionDate = newDate;
+    }
+    const title = buildBilanTitle(data);
+    await supabaseClient.from("bilans").insert({
+      user_id: currentUser.id,
+      title,
+      data,
+    });
+  }
+  copyStatus.textContent = "Duplication terminée.";
+  setTimeout(() => (copyStatus.textContent = ""), 2000);
+  loadBilans();
+}
+
+function sanitizeFilename(value) {
+  return String(value || "bilan")
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/(^-|-$)/g, "")
+    .slice(0, 80);
 }
 
 async function handlePrint() {
