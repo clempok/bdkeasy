@@ -4,7 +4,7 @@ const SUPABASE_URL = "https://nvmcglnkzvipkhsgxbfx.supabase.co";
 const SUPABASE_ANON_KEY =
   "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im52bWNnbG5renZpcGtoc2d4YmZ4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzExODI4MjQsImV4cCI6MjA4Njc1ODgyNH0.uTlLc6WH7IcFabmuCOfV_vTUU6mo7HfA136xfw7OXYI";
 
-const supabase = supabaseLib?.createClient
+const supabaseClient = supabaseLib?.createClient
   ? supabaseLib.createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
   : null;
 
@@ -60,7 +60,7 @@ init();
 
 function init() {
   authStatus.textContent = "Initialisation...";
-  if (!supabase) {
+  if (!supabaseClient) {
     authStatus.textContent =
       "Supabase non chargé. Vérifie la connexion internet ou un bloqueur de scripts.";
     return;
@@ -97,7 +97,7 @@ function init() {
   if (googleLogin) googleLogin.addEventListener("click", signInWithGoogle);
   if (signOutInline) {
     signOutInline.addEventListener("click", async () => {
-      await supabase.auth.signOut();
+      await supabaseClient.auth.signOut();
     });
   }
 
@@ -108,7 +108,7 @@ function init() {
   if (signUpBtn) signUpBtn.addEventListener("click", signUp);
   if (magicBtn) magicBtn.addEventListener("click", magicLink);
 
-  supabase.auth.onAuthStateChange((_event, session) => {
+  supabaseClient.auth.onAuthStateChange((_event, session) => {
     currentUser = session?.user || null;
     updateAuthUI();
     if (currentUser) {
@@ -116,7 +116,7 @@ function init() {
     }
   });
 
-  supabase.auth.getSession().then(({ data }) => {
+  supabaseClient.auth.getSession().then(({ data }) => {
     currentUser = data.session?.user || null;
     updateAuthUI();
     if (currentUser) {
@@ -146,7 +146,7 @@ async function signIn() {
   const email = document.getElementById("auth-email").value.trim();
   const password = document.getElementById("auth-password").value.trim();
   if (!email || !password) return setAuthStatus("Email et mot de passe requis.");
-  const { error } = await supabase.auth.signInWithPassword({ email, password });
+  const { error } = await supabaseClient.auth.signInWithPassword({ email, password });
   if (error) return setAuthStatus(error.message);
   setAuthStatus("Connexion réussie.");
 }
@@ -155,7 +155,7 @@ async function signUp() {
   const email = document.getElementById("auth-email").value.trim();
   const password = document.getElementById("auth-password").value.trim();
   if (!email || !password) return setAuthStatus("Email et mot de passe requis.");
-  const { error } = await supabase.auth.signUp({ email, password });
+  const { error } = await supabaseClient.auth.signUp({ email, password });
   if (error) return setAuthStatus(error.message);
   setAuthStatus("Compte créé. Vérifie ta boîte mail.");
 }
@@ -163,13 +163,13 @@ async function signUp() {
 async function magicLink() {
   const email = document.getElementById("auth-email").value.trim();
   if (!email) return setAuthStatus("Email requis.");
-  const { error } = await supabase.auth.signInWithOtp({ email });
+  const { error } = await supabaseClient.auth.signInWithOtp({ email });
   if (error) return setAuthStatus(error.message);
   setAuthStatus("Lien magique envoyé.");
 }
 
 async function signInWithGoogle() {
-  const { error } = await supabase.auth.signInWithOAuth({
+  const { error } = await supabaseClient.auth.signInWithOAuth({
     provider: "google",
     options: {
       redirectTo: window.location.origin,
@@ -203,9 +203,9 @@ async function handleSaveBilan() {
 
   let result;
   if (currentBilanId) {
-    result = await supabase.from("bilans").update(payload).eq("id", currentBilanId).select().single();
+    result = await supabaseClient.from("bilans").update(payload).eq("id", currentBilanId).select().single();
   } else {
-    result = await supabase.from("bilans").insert(payload).select().single();
+    result = await supabaseClient.from("bilans").insert(payload).select().single();
   }
 
   if (result.error) {
@@ -241,7 +241,7 @@ function resetForm() {
 
 async function loadBilans() {
   if (!savedBilans) return;
-  const { data, error } = await supabase
+  const { data, error } = await supabaseClient
     .from("bilans")
     .select("id,title,created_at,data")
     .order("created_at", { ascending: false });
@@ -278,7 +278,7 @@ async function loadBilans() {
       loadBilan(clone);
     });
     item.querySelector("[data-action='delete']").addEventListener("click", async () => {
-      await supabase.from("bilans").delete().eq("id", entry.id);
+      await supabaseClient.from("bilans").delete().eq("id", entry.id);
       loadBilans();
     });
     savedBilans.appendChild(item);
