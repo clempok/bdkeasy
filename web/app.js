@@ -487,12 +487,12 @@ async function generatePdfBlob(data) {
   }
 
   const canvas = await window.html2canvas(container, {
-    scale: 2,
+    scale: 1.2,
     backgroundColor: "#ffffff",
   });
   document.body.removeChild(container);
 
-  const imgData = canvas.toDataURL("image/png");
+  const imgData = canvas.toDataURL("image/jpeg", 0.65);
   const pdf = new jsPDF("p", "pt", "a4");
   const pageWidth = pdf.internal.pageSize.getWidth();
   const pageHeight = pdf.internal.pageSize.getHeight();
@@ -500,13 +500,13 @@ async function generatePdfBlob(data) {
   let heightLeft = imgHeight;
   let position = 0;
 
-  pdf.addImage(imgData, "PNG", 0, position, pageWidth, imgHeight);
+  pdf.addImage(imgData, "JPEG", 0, position, pageWidth, imgHeight);
   heightLeft -= pageHeight;
 
   while (heightLeft > 0) {
     position = heightLeft - imgHeight;
     pdf.addPage();
-    pdf.addImage(imgData, "PNG", 0, position, pageWidth, imgHeight);
+    pdf.addImage(imgData, "JPEG", 0, position, pageWidth, imgHeight);
     heightLeft -= pageHeight;
   }
 
