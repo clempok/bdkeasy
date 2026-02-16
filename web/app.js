@@ -463,20 +463,54 @@ async function generatePdfBlob(data) {
   container.style.position = "fixed";
   container.style.left = "-9999px";
   container.style.top = "0";
-  container.style.width = "800px";
-  container.innerHTML = buildPreviewHtml(data);
+  container.style.width = "794px";
+  container.style.background = "#fff";
+  container.style.padding = "24px";
+  container.innerHTML = `
+    <style>
+      .preview-header { border: 1px solid #eadfce; border-radius: 18px; padding: 16px 18px; background: linear-gradient(120deg, #fff7ec 0%, #f2fbf8 100%); }
+      .preview-title { font-family: 'Fraunces', serif; font-size: 24px; color: #0a6a63; }
+      .preview-subtitle { font-size: 12px; color: #6d6a64; }
+      .preview-meta { font-size: 12px; color: #6d6a64; display: grid; gap: 6px; margin-top: 10px; }
+      .preview-meta span { font-weight: 600; color: #1a1a1a; min-width: 90px; display: inline-block; }
+      .preview-section { border: 1px solid #eadfce; border-radius: 14px; background: #fff; padding: 12px 14px; margin-top: 12px; box-shadow: 0 8px 18px rgba(26,20,6,0.06); }
+      .preview-section-title { font-weight: 700; color: #1c3d5a; margin-bottom: 8px; }
+      .preview-item { font-size: 13px; margin-bottom: 6px; }
+      .preview-list { margin: 0; padding-left: 18px; font-size: 13px; }
+    </style>
+    ${buildPreviewHtml(data)}
+  `;
   document.body.appendChild(container);
 
-  const doc = new jsPDF("p", "pt", "a4");
-  await doc.html(container, {
-    autoPaging: "text",
-    html2canvas: { scale: 2 },
-    margin: [36, 36, 36, 36],
-    callback: () => {
-      document.body.removeChild(container);
-    },
+  if (document.fonts?.ready) {
+    await document.fonts.ready;
+  }
+
+  const canvas = await window.html2canvas(container, {
+    scale: 2,
+    backgroundColor: "#ffffff",
   });
-  return doc.output("blob");
+  document.body.removeChild(container);
+
+  const imgData = canvas.toDataURL("image/png");
+  const pdf = new jsPDF("p", "pt", "a4");
+  const pageWidth = pdf.internal.pageSize.getWidth();
+  const pageHeight = pdf.internal.pageSize.getHeight();
+  const imgHeight = (canvas.height * pageWidth) / canvas.width;
+  let heightLeft = imgHeight;
+  let position = 0;
+
+  pdf.addImage(imgData, "PNG", 0, position, pageWidth, imgHeight);
+  heightLeft -= pageHeight;
+
+  while (heightLeft > 0) {
+    position = heightLeft - imgHeight;
+    pdf.addPage();
+    pdf.addImage(imgData, "PNG", 0, position, pageWidth, imgHeight);
+    heightLeft -= pageHeight;
+  }
+
+  return pdf.output("blob");
 }
 
 function handleNativePrint() {
