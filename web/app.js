@@ -59,9 +59,10 @@ let currentBilanId = null;
 init();
 
 function init() {
+  authStatus.textContent = "Initialisation...";
   if (!supabase) {
     authStatus.textContent =
-      "Impossible de charger Supabase. Vérifie la connexion internet ou bloqueur de scripts.";
+      "Supabase non chargé. Vérifie la connexion internet ou un bloqueur de scripts.";
     return;
   }
   if (fields.bilanDate && !fields.bilanDate.value) {
@@ -100,9 +101,12 @@ function init() {
     });
   }
 
-  document.getElementById("sign-in").addEventListener("click", signIn);
-  document.getElementById("sign-up").addEventListener("click", signUp);
-  document.getElementById("magic-link").addEventListener("click", magicLink);
+  const signInBtn = document.getElementById("sign-in");
+  const signUpBtn = document.getElementById("sign-up");
+  const magicBtn = document.getElementById("magic-link");
+  if (signInBtn) signInBtn.addEventListener("click", signIn);
+  if (signUpBtn) signUpBtn.addEventListener("click", signUp);
+  if (magicBtn) magicBtn.addEventListener("click", magicLink);
 
   supabase.auth.onAuthStateChange((_event, session) => {
     currentUser = session?.user || null;
