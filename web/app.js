@@ -149,40 +149,129 @@ async function signIn() {
   const email = document.getElementById("auth-email").value.trim();
   const password = document.getElementById("auth-password").value.trim();
   if (!email || !password) return setAuthStatus("Email et mot de passe requis.");
-  const { error } = await supabaseClient.auth.signInWithPassword({ email, password });
-  if (error) return setAuthStatus(error.message);
-  setAuthStatus("Connexion réussie.");
+  setAuthStatus("Connexion en cours...");
+
+  try {
+    const { error } = await supabaseClient.auth.signInWithPassword({ email, password });
+    if (!error) {
+      setAuthStatus("Connexion réussie.");
+      return;
+    }
+
+    if (!isFetchError(error)) {
+      setAuthStatus(formatAuthError(error));
+      return;
+    }
+  } catch (error) {
+    if (!isFetchError(error)) {
+      setAuthStatus(formatAuthError(error));
+      return;
+    }
+  }
+
+  try {
+    await signInWithPasswordFallback(email, password);
+    setAuthStatus("Connexion réussie.");
+  } catch (error) {
+    setAuthStatus(formatAuthError(error));
+  }
 }
 
 async function signUp() {
   const email = document.getElementById("auth-email").value.trim();
   const password = document.getElementById("auth-password").value.trim();
   if (!email || !password) return setAuthStatus("Email et mot de passe requis.");
-  const { error } = await supabaseClient.auth.signUp({ email, password });
-  if (error) return setAuthStatus(error.message);
-  setAuthStatus("Compte créé. Vérifie ta boîte mail.");
+  setAuthStatus("Création du compte...");
+  try {
+    const { error } = await supabaseClient.auth.signUp({ email, password });
+    if (error) {
+      setAuthStatus(formatAuthError(error));
+      return;
+    }
+    setAuthStatus("Compte créé. Vérifie ta boîte mail.");
+  } catch (error) {
+    setAuthStatus(formatAuthError(error));
+  }
 }
 
 async function magicLink() {
   const email = document.getElementById("auth-email").value.trim();
   if (!email) return setAuthStatus("Email requis.");
-  const { error } = await supabaseClient.auth.signInWithOtp({ email });
-  if (error) return setAuthStatus(error.message);
-  setAuthStatus("Lien magique envoyé.");
+  setAuthStatus("Envoi du lien magique...");
+  try {
+    const { error } = await supabaseClient.auth.signInWithOtp({ email });
+    if (error) {
+      setAuthStatus(formatAuthError(error));
+      return;
+    }
+    setAuthStatus("Lien magique envoyé.");
+  } catch (error) {
+    setAuthStatus(formatAuthError(error));
+  }
 }
 
 async function signInWithGoogle() {
-  const { error } = await supabaseClient.auth.signInWithOAuth({
-    provider: "google",
-    options: {
-      redirectTo: window.location.origin,
-    },
-  });
-  if (error) return setAuthStatus(error.message);
+  setAuthStatus("Redirection Google...");
+  try {
+    const { error } = await supabaseClient.auth.signInWithOAuth({
+      provider: "google",
+      options: {
+        redirectTo: window.location.origin,
+      },
+    });
+    if (error) return setAuthStatus(formatAuthError(error));
+  } catch (error) {
+    setAuthStatus(formatAuthError(error));
+  }
 }
 
 function setAuthStatus(message) {
   authStatus.textContent = message;
+}
+
+function isFetchError(error) {
+  const message = String(error?.message || error || "");
+  return message.toLowerCase().includes("failed to fetch");
+}
+
+function formatAuthError(error) {
+  const message = String(error?.message || error || "Erreur inconnue");
+  if (message.toLowerCase().includes("failed to fetch")) {
+    return "Connexion au serveur impossible. Vérifie le réseau, un VPN/proxy ou un bloqueur de contenu, puis réessaie.";
+  }
+  return message;
+}
+
+async function signInWithPasswordFallback(email, password) {
+  const response = await fetch(`${SUPABASE_URL}/auth/v1/token?grant_type=password`, {
+    method: "POST",
+    headers: {
+      apikey: SUPABASE_ANON_KEY,
+      Authorization: `Bearer ${SUPABASE_ANON_KEY}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ email, password }),
+  });
+
+  const payload = await response.json().catch(() => ({}));
+  if (!response.ok) {
+    throw new Error(payload.msg || payload.message || "Connexion impossible.");
+  }
+
+  const accessToken = payload.access_token;
+  const refreshToken = payload.refresh_token;
+  if (!accessToken || !refreshToken) {
+    throw new Error("Réponse de connexion invalide.");
+  }
+
+  const { error } = await supabaseClient.auth.setSession({
+    access_token: accessToken,
+    refresh_token: refreshToken,
+  });
+
+  if (error) {
+    throw error;
+  }
 }
 
 function handleChange() {
